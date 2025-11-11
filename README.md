@@ -1,75 +1,38 @@
-# Bidyapith Backend
+# 📚 Bidyapith Backend
 
-This backend supports MongoDB via a connection string (`MONGODB_URI`) and falls back to in-memory mode if the database is unavailable.
+The **Bidyapith Backend** is the server-side application powering the [Bidyapith](https://github.com/Prosunsajal4/Bidyapith-frontend) platform — an academic helper tool designed for **Khulna University Electronics and Communication Engineering (ECE)** students.  
+It manages data, authentication, and communication with Firebase, ensuring secure and efficient backend operations.
 
-## Quick start
+---
 
-1. Copy `.env.example` to `.env` and set `MONGODB_URI`.
-2. Start MongoDB (choose one):
+## 🚀 Features
 
-   - Local (Docker):
-     - Install Docker Desktop
-     - Run:
-       ```powershell
-       docker run -d --name mongo -p 27017:27017 -v C:\\mongo-data:/data/db mongo:7
-       ```
-     - Then set `MONGODB_URI=mongodb://127.0.0.1:27017/smart_db` in `.env`.
-   - Atlas:
-     - Add your IP to Network Access (or 0.0.0.0/0 for testing)
-     - Create a database user and note the password
-     - Set `MONGODB_URI=mongodb+srv://<user>:<password>@<cluster-host>/smart_db?retryWrites=true&w=majority`
+- 🔐 Secure API endpoints with token-based authentication  
+- 📦 MongoDB integration for data storage  
+- ☁️ Firebase Admin SDK for real-time updates and hosting integration  
+- ⚙️ Express.js server with modular route structure  
+- 🧠 RESTful APIs for frontend interaction  
+- 🌍 Environment variable–based configuration (via `.env`)  
+- 🧰 Easy to deploy and extend
 
-3. Install deps:
+---
 
-   ```powershell
-   cd Bidyapith-backend
-   npm install
-   ```
+## 🛠️ Tech Stack
 
-4. Run:
-   ```powershell
-   npm start
-   ```
+| Technology | Purpose |
+|-------------|----------|
+| **Node.js** | Runtime environment |
+| **Express.js** | Backend web framework |
+| **MongoDB** | Database |
+| **Firebase Admin SDK** | Cloud integration |
+| **dotenv** | Environment variable management |
+| **CORS & Helmet** | Security middleware |
 
-## Node.js version note (TLS with Atlas)
+---
 
-With Node 22 on Windows, some users see TLS handshake errors with Atlas:
+## ⚙️ Project Setup
 
-```
-SSL routines: ssl3_read_bytes: tlsv1 alert internal error
-```
-
-If you hit this, switch to Node 20 LTS using nvm-windows:
-
-```powershell
-choco install nvm -y  # or install from https://github.com/coreybutler/nvm-windows
-nvm install 20.16.0
-nvm use 20.16.0
-node -v
-```
-
-Then retry the connection test:
-
-```powershell
-npm run mongo:test
-```
-
-## Debug endpoints
-
-- GET `/ping` — quick health check
-- GET `/debug/db-status` — shows whether DB collections are ready
-- GET `/debug/seed-course` — seed one in-memory course (dev only)
-- GET `/debug/clear` — clear in-memory data
-
-## Test the DB connection
-
-```powershell
-npm run mongo:test
-```
-
-This will connect using your `.env` and report success/failure.
-
-## Environment
-
-See `.env.example` for all available variables.
-# Bidyapith-backend
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/Prosunsajal4/Bidyapith-backend.git
+cd Bidyapith-backend
