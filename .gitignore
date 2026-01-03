@@ -1,4 +1,8 @@
 node_modules
 .env
 Bidyapith_main_firebase_key.json
+bidyapith-469ab-firebase-adminsdk-fbsvc-8a13af091d.json
+*.json.bak
+*-firebase-adminsdk-*.json
 data/
+.vercel
