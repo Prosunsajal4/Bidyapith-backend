@@ -1,0 +1,27 @@
+# Vercel CLI commands to add environment variables for Production
+# Run these in your terminal after installing and logging in with `vercel login`.
+
+# 1) Add backend Firebase service account (base64 encoded)
+# When prompted, paste the long base64 string (FB_SERVICE_KEY value from your local .env)
+vercel env add FB_SERVICE_KEY production
+vercel env add FB_SERVICE_KEY preview
+
+# 2) Add frontend (public) Firebase web config values (example variable names used by Next.js/Vite/CRA)
+# Replace values with the ones from Firebase Console -> Project Settings -> Your apps -> Web app
+vercel env add NEXT_PUBLIC_FIREBASE_API_KEY production
+vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN production
+vercel env add NEXT_PUBLIC_FIREBASE_PROJECT_ID production
+vercel env add NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET production
+vercel env add NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID production
+vercel env add NEXT_PUBLIC_FIREBASE_APP_ID production
+
+# Repeat the same for preview if you use preview deployments
+vercel env add NEXT_PUBLIC_FIREBASE_API_KEY preview
+vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN preview
+vercel env add NEXT_PUBLIC_FIREBASE_PROJECT_ID preview
+vercel env add NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET preview
+vercel env add NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID preview
+vercel env add NEXT_PUBLIC_FIREBASE_APP_ID preview
+
+# After adding, redeploy the project (or run `vercel --prod`).
+# Note: env vars are injected at build time; changing them requires a new build to take effect.

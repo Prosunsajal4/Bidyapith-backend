@@ -7,13 +7,80 @@ const app = express();
 const admin = require("firebase-admin");
 const port = process.env.PORT || 3000;
 
-// allow overriding the firebase admin key path via env, default to existing file
-const serviceAccountPath =
-  process.env.FIREBASE_KEY_PATH || "./Bidyapith_main_firebase_key.json";
-const serviceAccount = require(serviceAccountPath);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Load Firebase service account: prefer FB_SERVICE_KEY (base64 JSON),
+// otherwise fall back to a file path (FIREBASE_KEY_PATH or default file).
+let serviceAccount;
+try {
+  if (process.env.FB_SERVICE_KEY) {
+    const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
+      "utf8"
+    );
+    serviceAccount = JSON.parse(decoded);
+    console.log("🔐 Loaded Firebase service account from FB_SERVICE_KEY env");
+  }
+} catch (e) {
+  console.error("Failed to parse FB_SERVICE_KEY:", e && e.message);
+}
+
+if (!serviceAccount) {
+  const serviceAccountPath =
+    process.env.FIREBASE_KEY_PATH || "./Bidyapith_main_firebase_key.json";
+  try {
+    serviceAccount = require(serviceAccountPath);
+    console.log(
+      "🔐 Loaded Firebase service account from file:",
+      serviceAccountPath
+    );
+  } catch (e) {
+    console.error(
+      "Failed to load Firebase service account file:",
+      e && e.message
+    );
+  }
+}
+
+let firebaseInitialized = false;
+if (serviceAccount) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+    firebaseInitialized = true;
+    console.log("✅ Firebase Admin initialized from service account");
+  } catch (e) {
+    console.error(
+      "Failed to initialize Firebase Admin from FB_SERVICE_KEY:",
+      e && e.message
+    );
+    // reset so we can attempt file fallback
+    serviceAccount = null;
+  }
+}
+
+// If FB_SERVICE_KEY failed or was not provided, try file fallback and init
+if (!firebaseInitialized) {
+  const serviceAccountPath =
+    process.env.FIREBASE_KEY_PATH || "./Bidyapith_main_firebase_key.json";
+  try {
+    const fileSa = require(serviceAccountPath);
+    admin.initializeApp({
+      credential: admin.credential.cert(fileSa),
+    });
+    firebaseInitialized = true;
+    console.log("✅ Firebase Admin initialized from file:", serviceAccountPath);
+  } catch (e) {
+    console.error(
+      "Failed to initialize Firebase Admin from file:",
+      e && e.message
+    );
+  }
+}
+
+if (!firebaseInitialized) {
+  console.error(
+    "⚠️ Firebase Admin SDK NOT initialized. Token-protected routes will fail."
+  );
+}
 
 // middleware
 app.use(cors());
@@ -93,17 +160,20 @@ const inMemoryDB = {
 };
 
 // File persistence when MongoDB is unavailable
-const fileStore = require('./utils/fileStore');
+const fileStore = require("./utils/fileStore");
 (function bootstrapFromFile() {
   const snapshot = fileStore.load();
   if (snapshot && snapshot.courses && Array.isArray(snapshot.courses)) {
     inMemoryDB.courses = snapshot.courses;
-    inMemoryDB.enrollments = Array.isArray(snapshot.enrollments) ? snapshot.enrollments : [];
+    inMemoryDB.enrollments = Array.isArray(snapshot.enrollments)
+      ? snapshot.enrollments
+      : [];
     inMemoryDB.users = Array.isArray(snapshot.users) ? snapshot.users : [];
-    console.log(`💾 Loaded ${inMemoryDB.courses.length} courses from file store`);
+    console.log(
+      `💾 Loaded ${inMemoryDB.courses.length} courses from file store`
+    );
   }
 })();
-
 
 // Seed dataset (mirrors public/skills.json)
 const seedCourses = [
