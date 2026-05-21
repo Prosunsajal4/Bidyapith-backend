@@ -414,16 +414,31 @@ app.get("/products/:id", async (req, res) => {
 
   if (productsCollection) {
     try {
+      // Try MongoDB ObjectId first
       const query = { _id: new ObjectId(id) };
       const result = await productsCollection.findOne(query);
-      if (!result) return res.status(404).send({ message: "Course not found" });
-      return res.send(result);
+      if (result) return res.send(result);
+      
+      // Fallback: search by skillId field (for static data compatibility)
+      const skillIdQuery = { skillId: parseInt(id) };
+      const skillResult = await productsCollection.findOne(skillIdQuery);
+      if (skillResult) return res.send(skillResult);
+      
+      return res.status(404).send({ message: "Course not found" });
     } catch (e) {
+      // If ObjectId fails, try skillId
+      try {
+        const skillIdQuery = { skillId: parseInt(id) };
+        const result = await productsCollection.findOne(skillIdQuery);
+        if (result) return res.send(result);
+      } catch (e2) {
+        // ignore
+      }
       return res.status(400).send({ message: "Invalid course id" });
     }
   }
   // In-memory fallback
-  const result = inMemoryDB.courses.find((c) => String(c._id) === String(id));
+  const result = inMemoryDB.courses.find((c) => String(c._id) === String(id) || String(c.skillId) === String(id));
   if (!result) return res.status(404).send({ message: "Course not found" });
   res.send(result);
 });
