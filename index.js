@@ -179,6 +179,7 @@ const fileStore = require("./utils/fileStore");
 const seedCourses = [
   {
     _id: "seed-1",
+    skillId: 1,
     skillName: "Beginner Guitar Lessons",
     providerName: "Alex Martin",
     providerEmail: "alex@skillswap.com",
@@ -192,6 +193,7 @@ const seedCourses = [
   },
   {
     _id: "seed-2",
+    skillId: 2,
     skillName: "Spoken English Practice",
     providerName: "Sara Hossain",
     providerEmail: "sara@skillswap.com",
@@ -205,6 +207,7 @@ const seedCourses = [
   },
   {
     _id: "seed-3",
+    skillId: 3,
     skillName: "Basic Photography Workshop",
     providerName: "John Ray",
     providerEmail: "john@skillswap.com",
@@ -218,6 +221,7 @@ const seedCourses = [
   },
   {
     _id: "seed-4",
+    skillId: 4,
     skillName: "Cooking for Beginners",
     providerName: "Nadia Rahman",
     providerEmail: "nadia@skillswap.com",
@@ -232,6 +236,7 @@ const seedCourses = [
   },
   {
     _id: "seed-5",
+    skillId: 5,
     skillName: "Web Development Basics",
     providerName: "Rahul Das",
     providerEmail: "rahul@skillswap.com",
@@ -245,6 +250,7 @@ const seedCourses = [
   },
   {
     _id: "seed-6",
+    skillId: 6,
     skillName: "Graphic Design with Canva",
     providerName: "Lina Chowdhury",
     providerEmail: "lina@skillswap.com",
@@ -413,33 +419,33 @@ app.get("/products/:id", async (req, res) => {
   console.log("🔍 GET /products/:id -", id);
 
   if (productsCollection) {
+    // Try skillId first (for static data compatibility)
+    const numId = parseInt(id);
+    if (!isNaN(numId)) {
+      const skillIdQuery = { skillId: numId };
+      const skillResult = await productsCollection.findOne(skillIdQuery);
+      if (skillResult) return res.send(skillResult);
+    }
+    
+    // Try string _id match
+    const stringIdQuery = { _id: id };
+    const stringResult = await productsCollection.findOne(stringIdQuery);
+    if (stringResult) return res.send(stringResult);
+    
+    // Try MongoDB ObjectId
     try {
-      // Try MongoDB ObjectId first
       const query = { _id: new ObjectId(id) };
       const result = await productsCollection.findOne(query);
       if (result) return res.send(result);
-      
-      // Fallback: search by skillId field (for static data compatibility)
-      const skillIdQuery = { skillId: parseInt(id) };
-      const skillResult = await productsCollection.findOne(skillIdQuery);
-      if (skillResult) return res.send(skillResult);
-      
-      return res.status(404).send({ message: "Course not found" });
     } catch (e) {
-      // If ObjectId fails, try skillId
-      try {
-        const skillIdQuery = { skillId: parseInt(id) };
-        const result = await productsCollection.findOne(skillIdQuery);
-        if (result) return res.send(result);
-      } catch (e2) {
-        // ignore
-      }
-      return res.status(400).send({ message: "Invalid course id" });
+      // ignore invalid ObjectId
     }
+    
+    return res.status(404).send({ error: "Course not found" });
   }
   // In-memory fallback
   const result = inMemoryDB.courses.find((c) => String(c._id) === String(id) || String(c.skillId) === String(id));
-  if (!result) return res.status(404).send({ message: "Course not found" });
+  if (!result) return res.status(404).send({ error: "Course not found" });
   res.send(result);
 });
 
